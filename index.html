@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CHRO Sim">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <title>CHRO Simulator - 人事経営シミュレーション</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/mobile.css">
+</head>
+<body>
+
+  <!-- ===================================================
+       ナビゲーションバー
+       =================================================== -->
+  <nav id="main-nav">
+    <!-- 左: ブランド + プロジェクト名 -->
+    <div class="nav-brand">
+      <span class="nav-brand-title">CHRO Sim</span>
+      <button id="btn-project-list" class="btn btn-small nav-project-btn" title="プロジェクト管理">
+        <span id="nav-project">プロジェクト</span> ▼
+      </button>
+    </div>
+
+    <!-- 中央: 現在のゲーム情報（デスクトップのみ） -->
+    <div class="nav-info">
+      <span id="nav-year">----年度</span>
+      <span id="nav-company">社員数: --名</span>
+      <span id="nav-balance">資金: --万円</span>
+    </div>
+
+    <!-- モバイル: ゲーム情報バッジ -->
+    <div class="nav-info-mobile">
+      <span id="nav-year-m">--年度</span>
+      <span id="nav-balance-m">--万円</span>
+    </div>
+
+    <!-- ハンバーガーボタン（モバイルのみ表示） -->
+    <button id="btn-hamburger" class="btn-hamburger" aria-label="メニュー">
+      <span></span><span></span><span></span>
+    </button>
+
+    <!-- 右: メインナビゲーション（デスクトップ） -->
+    <ul class="nav-links">
+      <li><a href="#" class="nav-link active" data-screen="dashboard">ダッシュボード</a></li>
+      <li><a href="#" class="nav-link" data-screen="orgchart">組織図</a></li>
+      <li><a href="#" class="nav-link" data-screen="employees">社員一覧</a></li>
+      <li><a href="#" class="nav-link" data-screen="hr-actions">人事アクション</a></li>
+      <li><a href="#" class="nav-link" data-screen="turn">ターン進行</a></li>
+      <li><a href="#" class="nav-link nav-link-settings" id="btn-settings" data-screen="settings">&#x2699; 設定</a></li>
+    </ul>
+  </nav>
+
+  <!-- モバイル用ドロワーメニュー -->
+  <div id="mobile-drawer" class="mobile-drawer" aria-hidden="true">
+    <div class="mobile-drawer-header">
+      <div class="mobile-drawer-info">
+        <span id="drawer-year">----年度</span>
+        <span id="drawer-company">社員数: --名</span>
+        <span id="drawer-balance">資金: --万円</span>
+      </div>
+    </div>
+    <nav class="mobile-drawer-nav">
+      <a href="#" class="mobile-nav-link active" data-screen="dashboard">📊 ダッシュボード</a>
+      <a href="#" class="mobile-nav-link" data-screen="orgchart">🏢 組織図</a>
+      <a href="#" class="mobile-nav-link" data-screen="employees">👥 社員一覧</a>
+      <a href="#" class="mobile-nav-link" data-screen="hr-actions">📋 人事アクション</a>
+      <a href="#" class="mobile-nav-link" data-screen="turn">⏩ ターン進行</a>
+      <a href="#" class="mobile-nav-link" data-screen="settings">⚙️ 設定</a>
+    </nav>
+  </div>
+  <div id="mobile-drawer-overlay" class="mobile-drawer-overlay"></div>
+
+  <!-- ===================================================
+       メインコンテンツ
+       =================================================== -->
+  <main id="main-content">
+
+    <!-- ---- 画面: プロジェクト一覧 ---- -->
+    <div id="screen-project-list" class="screen hidden">
+      <h2>プロジェクト管理</h2>
+      <div id="project-list-area">
+        <!-- UIModule.renderProjectList() が描画 -->
+      </div>
+    </div>
+
+    <!-- ---- 画面: ダッシュボード ---- -->
+    <div id="screen-dashboard" class="screen active">
+      <h2>ダッシュボード</h2>
+      <div id="dashboard-content">
+        <!-- UIModule.renderDashboard() が描画 -->
+      </div>
+    </div>
+
+    <!-- ---- 画面: 組織図 ---- -->
+    <div id="screen-orgchart" class="screen hidden">
+      <h2>組織図</h2>
+      <div id="orgchart-content">
+        <!-- UIModule.renderOrgChart() が描画 -->
+      </div>
+    </div>
+
+    <!-- ---- 画面: 社員一覧 ---- -->
+    <div id="screen-employees" class="screen hidden">
+      <h2>社員一覧</h2>
+      <!-- フィルタバー -->
+      <div id="employee-filters" class="filter-bar">
+        <select id="filter-jobtype">
+          <option value="">全職種</option>
+        </select>
+        <select id="filter-grade">
+          <option value="">全グレード</option>
+        </select>
+        <select id="filter-unit">
+          <option value="">全部門</option>
+        </select>
+        <select id="filter-potential">
+          <option value="">全ポテンシャル</option>
+          <option value="S">S（最高）</option>
+          <option value="A">A（高）</option>
+          <option value="B">B（標準）</option>
+          <option value="C">C（標準以下）</option>
+        </select>
+        <select id="filter-position">
+          <option value="">全役職</option>
+        </select>
+        <input type="text" id="filter-keyword" placeholder="キーワード検索（氏名・部門）" style="min-width:180px;">
+      </div>
+      <div id="employees-content">
+        <!-- UIModule.renderEmployeeList() が描画 -->
+      </div>
+    </div>
+
+    <!-- ---- 画面: 人事アクション ---- -->
+    <div id="screen-hr-actions" class="screen hidden">
+      <h2>人事アクション</h2>
+      <div id="hr-actions-content">
+        <!-- UIModule.renderHRActions() が描画 -->
+      </div>
+    </div>
+
+    <!-- ---- 画面: ターン進行 ---- -->
+    <div id="screen-turn" class="screen hidden">
+      <h2>ターン進行 &mdash; 年次人事処理</h2>
+      <div id="turn-content">
+        <!-- UIModule.renderTurnScreen() が描画 -->
+      </div>
+      <div id="turn-actions">
+        <button id="btn-advance-turn" class="btn btn-primary btn-large">
+          次の年度へ進む（年次人事処理）
+        </button>
+      </div>
+    </div>
+
+    <!-- ---- 画面: 設定 ---- -->
+    <div id="screen-settings" class="screen hidden">
+      <h2>&#x2699; 設定</h2>
+      <div id="settings-content" data-active-tab="unittypes">
+        <!-- UIModule.renderSettings() が描画 -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===================================================
+       通知エリア
+       =================================================== -->
+  <div id="notification-area" aria-live="polite"></div>
+
+  <!-- ===================================================
+       モーダル群
+       =================================================== -->
+
+  <!-- 社員詳細 -->
+  <div id="modal-employee-detail" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3 id="modal-employee-name">社員詳細</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div id="modal-employee-body" class="modal-body">
+        <!-- UIModule が動的生成 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 採用 -->
+  <div id="modal-hire" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>新規採用</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-hire">
+          <label>職種
+            <select name="jobType" id="hire-jobtype" required></select>
+          </label>
+          <label>配属先部門
+            <select name="unitId" id="hire-unit">
+              <option value="">自動配属（最少人数の部門）</option>
+            </select>
+          </label>
+          <div style="margin-top:12px;">
+            <p style="font-size:13px;font-weight:600;margin-bottom:8px;">採用人数（グレード別）</p>
+            <table class="table-sm" id="hire-grade-table">
+              <thead><tr><th>グレード</th><th>名称</th><th>採用人数</th></tr></thead>
+              <tbody id="hire-grade-rows">
+                <!-- _populateFormSelects() が動的生成 -->
+              </tbody>
+            </table>
+          </div>
+          <div class="flex gap-2" style="margin-top:12px;">
+            <button type="submit" class="btn btn-primary">採用する</button>
+            <button type="button" class="btn btn-secondary modal-close">キャンセル</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 異動先選択 -->
+  <div id="modal-transfer" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>異動先を選択</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2"><strong id="transfer-employee-name"></strong> の異動先を選択してください。</p>
+        <label>配属先部門
+          <select id="transfer-unit-select"></select>
+        </label>
+        <div class="flex gap-2 mt-3">
+          <button class="btn btn-secondary modal-close">キャンセル</button>
+          <button id="transfer-confirm-btn" class="btn btn-primary">異動する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 役職割り当て -->
+  <div id="modal-assign-position" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>役職を割り当て</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-position-employee-name" class="mb-2" style="font-weight:600;"></p>
+        <p class="text-muted mb-3" style="font-size:12px;">最大3つまで選択できます</p>
+        <div id="modal-position-body" class="position-checklist">
+          <!-- UIModule が動的生成 -->
+        </div>
+        <input type="hidden" id="modal-position-employee-id">
+        <div class="flex gap-2 mt-3">
+          <button class="btn btn-secondary modal-close">キャンセル</button>
+          <button id="assign-position-confirm" class="btn btn-primary">割り当て</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 手動昇格 -->
+  <div id="modal-promote" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>昇格（G6以上 手動判断）</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-promote-employee-name" class="mb-3" style="font-weight:600;"></p>
+        <div id="modal-promote-body">
+          <!-- GameCallbacks.openPromotionModal() が動的生成 -->
+        </div>
+        <div class="flex gap-2 mt-3">
+          <button class="btn btn-secondary modal-close">キャンセル</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 部門追加 -->
+  <div id="modal-add-unit" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>部門を追加</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-add-unit">
+          <label>部門名
+            <input type="text" id="add-unit-name" placeholder="部門名を入力" required>
+          </label>
+          <label>部門種別
+            <select id="add-unit-unittype">
+              <option value="ut_tokkatsu_honbu">統括本部（Lv.1）</option>
+              <option value="ut_jigyo_honbu">事業本部（Lv.1）</option>
+              <option value="ut_honbu">本部（Lv.2）</option>
+              <option value="ut_jigyo_bu">事業部（Lv.2）</option>
+              <option value="ut_shisha">支社（Lv.3）</option>
+              <option value="ut_kojo">工場（Lv.3）</option>
+              <option value="ut_bu" selected>部（Lv.4）</option>
+              <option value="ut_ka">課（Lv.5）</option>
+              <option value="ut_shitsu">室（Lv.5）</option>
+            </select>
+          </label>
+          <label>親部門
+            <select id="add-unit-parent">
+              <option value="">（なし：ルート部門）</option>
+            </select>
+          </label>
+          <label>部門区分
+            <select id="add-unit-costtype">
+              <option value="cogs">原価部門</option>
+              <option value="sga" selected>販管部門</option>
+            </select>
+          </label>
+          <label>拠点
+            <select id="add-unit-location">
+              <option value="">（未設定）</option>
+            </select>
+          </label>
+          <div class="flex gap-2">
+            <button type="button" class="btn btn-secondary modal-close">キャンセル</button>
+            <button type="button" id="add-unit-confirm" class="btn btn-primary">追加</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 部門編集 -->
+  <div id="modal-edit-unit" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3>部門を編集</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-unit-id">
+        <label>部門名
+          <input type="text" id="edit-unit-name" placeholder="部門名">
+        </label>
+        <label>親部門
+          <select id="edit-unit-parent">
+            <option value="">（ルート部門 / 独立）</option>
+          </select>
+        </label>
+        <label>部門区分
+          <select id="edit-unit-costtype">
+            <option value="cogs">原価部門</option>
+            <option value="sga">販管部門</option>
+          </select>
+        </label>
+        <label id="edit-unit-unittype-row">部門種別
+          <select id="edit-unit-unittype">
+            <option value="ut_tokkatsu_honbu">統括本部（Lv.1）</option>
+            <option value="ut_jigyo_honbu">事業本部（Lv.1）</option>
+            <option value="ut_honbu">本部（Lv.2）</option>
+            <option value="ut_jigyo_bu">事業部（Lv.2）</option>
+            <option value="ut_shisha">支社（Lv.3）</option>
+            <option value="ut_kojo">工場（Lv.3）</option>
+            <option value="ut_bu">部（Lv.4）</option>
+            <option value="ut_ka">課（Lv.5）</option>
+            <option value="ut_shitsu">室（Lv.5）</option>
+          </select>
+        </label>
+        <label>拠点
+          <select id="edit-unit-location">
+            <option value="">（未設定）</option>
+          </select>
+        </label>
+        <div id="edit-unit-slots-container">
+          <!-- openEditUnitModal() が動的生成 -->
+        </div>
+        <div class="flex gap-2 mt-3">
+          <button class="btn btn-secondary modal-close">キャンセル</button>
+          <button id="edit-unit-delete" class="btn btn-danger">削除</button>
+          <button id="edit-unit-confirm" class="btn btn-primary">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 役職追加 -->
+  <div id="modal-add-position" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>役職を追加</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label>役職名
+          <input type="text" id="add-position-name" placeholder="例: 主任" required>
+        </label>
+        <label>対応階層レベル（0〜5）
+          <input type="number" id="add-position-level" min="0" max="5" value="3">
+        </label>
+        <label>役職手当（万円/月）
+          <input type="number" id="add-position-allowance" min="0" value="0">
+        </label>
+        <div class="flex gap-2 mt-3">
+          <button class="btn btn-secondary modal-close">キャンセル</button>
+          <button id="add-position-confirm" class="btn btn-primary">追加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 拠点追加 -->
+  <div id="modal-add-location" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>拠点を追加</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label>拠点名
+          <input type="text" id="add-location-name" placeholder="例: 大阪オフィス" required>
+        </label>
+        <label>地域区分
+          <select id="add-location-region">
+            <option value="metropolitan">首都圏（年間2,500万/50人）</option>
+            <option value="urban">地方都市圏（年間1,500万/50人）</option>
+            <option value="rural">地方圏（年間800万/50人）</option>
+          </select>
+        </label>
+        <label>定員（50人単位）
+          <input type="number" id="add-location-capacity" min="50" step="50" value="50">
+        </label>
+        <div class="flex gap-2 mt-3">
+          <button class="btn btn-secondary modal-close">キャンセル</button>
+          <button id="add-location-confirm" class="btn btn-primary">追加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 取締役任命 -->
+  <div id="modal-add-board-member" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3>取締役を任命</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label>社員（取締役に任命する社員）
+          <select id="board-employee-id">
+            <option value="">社員を選択</option>
+          </select>
+        </label>
+        <label>役員種別
+          <select id="board-attribute">
+            <option value="representative_director">代表取締役</option>
+            <option value="senior_managing_director">専務取締役</option>
+            <option value="managing_director">常務取締役</option>
+            <option value="director">取締役</option>
+            <option value="outside_director">社外取締役</option>
+            <option value="standing_auditor">常務監査役</option>
+            <option value="outside_auditor">社外監査役</option>
+          </select>
+        </label>
+        <label>役割
+          <select id="board-role">
+            <option value="">（なし）</option>
+            <option value="CEO">CEO（最高経営責任者）</option>
+            <option value="COO">COO（最高執行責任者）売上+5%</option>
+            <option value="CFO">CFO（最高財務責任者）全費用−3%</option>
+            <option value="CTO">CTO（最高技術責任者）原価人件費−5%</option>
+            <option value="CMO">CMO（最高マーケティング責任者）販管人件費−5%</option>
+            <option value="CIO">CIO（最高情報責任者）人件費全体−4%</option>
+            <option value="CLO">CLO（最高法務責任者）原価人件費−3%</option>
+            <option value="CSO">CSO（最高戦略責任者）売上+4%</option>
+            <option value="CHRO">CHRO（最高人事責任者）</option>
+          </select>
+        </label>
+        <label>役員報酬（万円/年）
+          <input type="number" id="board-compensation" min="0" step="100" value="2000">
+        </label>
+        <div class="flex gap-2 mt-3">
+          <button class="btn btn-secondary modal-close">キャンセル</button>
+          <button id="add-board-member-confirm" class="btn btn-primary">任命する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新規プロジェクト作成 -->
+  <div id="modal-new-project" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>新規プロジェクト（会社）を作成</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-new-project">
+          <label>会社名（プロジェクト名）
+            <input type="text" name="projectName" placeholder="例: テクノ株式会社" required>
+          </label>
+          <label>開始年度
+            <input type="number" name="startYear" min="2000" max="2100" value="2025" required>
+          </label>
+          <div class="flex gap-2 mt-3">
+            <button type="button" class="btn btn-secondary modal-close">キャンセル</button>
+            <button type="submit" class="btn btn-primary">作成する</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================
+       スクリプト読み込み（依存順を守ること）
+       =================================================== -->
+  <script src="js/data.js"></script>
+  <script src="js/org.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+
+  <script>
+    // PWA: Service Worker 登録
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    // ハンバーガーメニュー
+    (function() {
+      const hamburger = document.getElementById('btn-hamburger');
+      const drawer    = document.getElementById('mobile-drawer');
+      const overlay   = document.getElementById('mobile-drawer-overlay');
+
+      function openDrawer() {
+        drawer.classList.add('open');
+        overlay.classList.add('open');
+        drawer.setAttribute('aria-hidden', 'false');
+        hamburger.classList.add('open');
+      }
+      function closeDrawer() {
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+        drawer.setAttribute('aria-hidden', 'true');
+        hamburger.classList.remove('open');
+      }
+
+      hamburger.addEventListener('click', () => {
+        drawer.classList.contains('open') ? closeDrawer() : openDrawer();
+      });
+      overlay.addEventListener('click', closeDrawer);
+
+      // ドロワー内のリンクはメインナビのリンクと同じ data-screen を持つ
+      // → 既存の main.js イベントリスナーに委譲するためクリック時に対応リンクをクリック
+      document.querySelectorAll('.mobile-nav-link').forEach(link => {
+        link.addEventListener('click', e => {
+          e.preventDefault();
+          const screen = link.dataset.screen;
+          closeDrawer();
+          // デスクトップ側の nav-link をクリックして画面切替ロジックを再利用
+          const target = document.querySelector(`.nav-link[data-screen="${screen}"]`);
+          if (target) target.click();
+          // アクティブ状態の同期
+          document.querySelectorAll('.mobile-nav-link').forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+        });
+      });
+
+      // デスクトップのナビクリック時にもドロワーのアクティブを同期
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+          const screen = link.dataset.screen;
+          document.querySelectorAll('.mobile-nav-link').forEach(l => {
+            l.classList.toggle('active', l.dataset.screen === screen);
+          });
+        });
+      });
+
+      // nav-info-mobile の更新（nav-year/nav-balance の変更を監視）
+      function syncMobileInfo() {
+        const y = document.getElementById('nav-year');
+        const b = document.getElementById('nav-balance');
+        const c = document.getElementById('nav-company');
+        const ym = document.getElementById('nav-year-m');
+        const bm = document.getElementById('nav-balance-m');
+        const dy = document.getElementById('drawer-year');
+        const db = document.getElementById('drawer-balance');
+        const dc = document.getElementById('drawer-company');
+        if (y && ym) ym.textContent = y.textContent;
+        if (b && bm) bm.textContent = b.textContent;
+        if (y && dy) dy.textContent = y.textContent;
+        if (b && db) db.textContent = b.textContent;
+        if (c && dc) dc.textContent = c.textContent;
+      }
+      // MutationObserver でナビ情報が更新されたらモバイル用にも反映
+      const navInfo = document.querySelector('.nav-info');
+      if (navInfo) {
+        new MutationObserver(syncMobileInfo).observe(navInfo, { childList: true, subtree: true, characterData: true });
+      }
+    })();
+  </script>
+
+</body>
+</html>
