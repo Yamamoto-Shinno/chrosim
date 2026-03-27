@@ -1,5 +1,5 @@
 /* Service Worker - CHRO Simulator Mobile */
-const CACHE_NAME = 'chrosim-mobile-v1';
+const CACHE_NAME = 'chrosim-mobile-v2';
 const ASSETS = [
   './',
   './index.html',
