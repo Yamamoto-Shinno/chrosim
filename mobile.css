@@ -1,0 +1,384 @@
+/* ============================================================
+   mobile.css - CHRO Simulator モバイル対応スタイル
+   style.css の後に読み込む。767px以下に適用。
+   ============================================================ */
+
+/* ============================================================
+   ハンバーガーボタン（デスクトップでは非表示）
+   ============================================================ */
+.btn-hamburger {
+  display:         none;
+  flex-direction:  column;
+  justify-content: center;
+  align-items:     center;
+  gap:             5px;
+  width:           40px;
+  height:          40px;
+  background:      transparent;
+  border:          none;
+  cursor:          pointer;
+  padding:         6px;
+  margin-left:     auto;
+  flex-shrink:     0;
+}
+.btn-hamburger span {
+  display:          block;
+  width:            22px;
+  height:           2px;
+  background:       white;
+  border-radius:    2px;
+  transition:       transform 0.2s ease, opacity 0.2s ease;
+}
+.btn-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.btn-hamburger.open span:nth-child(2) { opacity: 0; }
+.btn-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* モバイル用nav-info（デスクトップでは非表示） */
+.nav-info-mobile {
+  display:     none;
+  font-size:   11px;
+  color:       rgba(255,255,255,0.9);
+  gap:         8px;
+  white-space: nowrap;
+}
+.nav-info-mobile span {
+  background:    rgba(255,255,255,0.15);
+  padding:       2px 7px;
+  border-radius: 10px;
+}
+
+/* ============================================================
+   ドロワーメニュー
+   ============================================================ */
+.mobile-drawer {
+  display:    none;
+  position:   fixed;
+  top:        0;
+  left:       -280px;
+  width:      280px;
+  height:     100%;
+  background: #1e293b;
+  z-index:    200;
+  transition: left 0.25s ease;
+  overflow-y: auto;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.mobile-drawer.open { left: 0; }
+
+.mobile-drawer-overlay {
+  display:        none;
+  position:       fixed;
+  inset:          0;
+  background:     rgba(0,0,0,0.5);
+  z-index:        199;
+  opacity:        0;
+  pointer-events: none;
+  transition:     opacity 0.25s ease;
+}
+.mobile-drawer-overlay.open {
+  opacity:        1;
+  pointer-events: auto;
+}
+
+.mobile-drawer-header {
+  padding:       16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  background:    #2563eb;
+}
+.mobile-drawer-info {
+  display:        flex;
+  flex-direction: column;
+  gap:            4px;
+  font-size:      12px;
+  color:          rgba(255,255,255,0.9);
+  padding-top:    8px;
+}
+
+.mobile-drawer-nav {
+  display:        flex;
+  flex-direction: column;
+  padding:        12px 0;
+}
+.mobile-nav-link {
+  display:         block;
+  padding:         14px 20px;
+  color:           rgba(255,255,255,0.8);
+  text-decoration: none;
+  font-size:       15px;
+  font-weight:     500;
+  border-left:     3px solid transparent;
+  transition:      background 0.15s, color 0.15s, border-color 0.15s;
+}
+.mobile-nav-link:hover,
+.mobile-nav-link.active {
+  background:    rgba(255,255,255,0.08);
+  color:         white;
+  border-color:  #60a5fa;
+}
+
+/* ============================================================
+   モバイルブレークポイント（767px以下）
+   ============================================================ */
+@media (max-width: 767px) {
+  :root {
+    --nav-height: 52px;
+  }
+
+  /* ---- nav ---- */
+  #main-nav {
+    padding:  0 12px;
+    height:   var(--nav-height);
+    padding-top: env(safe-area-inset-top, 0px);
+    height:   calc(var(--nav-height) + env(safe-area-inset-top, 0px));
+  }
+  .nav-brand-title { font-size: 15px; }
+  .nav-info        { display: none; }
+  .nav-links       { display: none; }
+  .nav-project-btn { display: none; }
+  .nav-info-mobile { display: flex; }
+  .btn-hamburger   { display: flex; }
+  .mobile-drawer         { display: block; }
+  .mobile-drawer-overlay { display: block; }
+
+  /* ---- メインコンテンツ ---- */
+  #main-content {
+    padding:    12px;
+    margin-top: calc(var(--nav-height) + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .screen > h2 {
+    font-size:     17px;
+    margin-bottom: 14px;
+  }
+
+  /* ---- KPIグリッド ---- */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap:                   10px;
+    margin-bottom:         16px;
+  }
+  .kpi-card {
+    padding: 12px;
+  }
+  .card-value { font-size: 20px; }
+  .card-label,
+  .card-title { font-size: 10px; }
+
+  /* ---- ダッシュボード2カラム → 1カラム ---- */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap:                   14px;
+  }
+
+  /* ---- テーブル：横スクロール ---- */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* 社員テーブルは横スクロール許容、フォントを少し小さく */
+  .employee-table {
+    font-size: 12px;
+    min-width: 600px;
+  }
+  .employee-table th,
+  .employee-table td {
+    padding: 6px 8px;
+  }
+  /* ボタン群を小さく */
+  .employee-table .btn-sm,
+  .employee-table .btn-small {
+    padding:   3px 6px;
+    font-size: 11px;
+  }
+
+  /* ---- フィルタバー：縦積み ---- */
+  .filter-bar {
+    flex-direction: column;
+    gap:            8px;
+  }
+  .filter-bar select,
+  .filter-bar input {
+    width:     100%;
+    min-width: unset;
+    font-size: 14px; /* iOSズーム防止（16px未満でズームするため） */
+  }
+  /* iOSフォームズーム防止（全selectとinput） */
+  select, input[type="text"], input[type="number"] {
+    font-size: 16px;
+  }
+  /* ただしテーブル内は読みやすさ優先で小さく */
+  .table-sm select,
+  .table-sm input {
+    font-size: 14px;
+  }
+
+  /* ---- モーダル：フルスクリーン ---- */
+  .modal-content {
+    position:   fixed !important;
+    top:        0 !important;
+    left:       0 !important;
+    right:      0 !important;
+    bottom:     0 !important;
+    width:      100% !important;
+    max-width:  100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+    overflow-y: auto;
+    margin:     0;
+    padding-top:    env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .modal-header {
+    position:   sticky;
+    top:        0;
+    background: var(--color-surface);
+    z-index:    10;
+    padding:    14px 16px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .modal-body {
+    padding: 16px;
+  }
+  .modal-content.modal-lg {
+    /* modal-lg もフルスクリーン統一 */
+  }
+
+  /* ---- 通知エリア ---- */
+  #notification-area {
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    right:  8px;
+    left:   8px;
+    max-width: unset;
+  }
+
+  /* ---- 組織図 ---- */
+  .org-tree       { font-size: 12px; }
+  .org-children   { margin-left: 16px; padding-left: 10px; }
+
+  /* ホバーで表示していたボタン群を常時表示（タッチでhoverしない） */
+  .org-node-actions {
+    display:     inline-flex !important;
+    margin-left: auto;
+  }
+  /* アクションボタンを大きくしてタップしやすく */
+  .org-node-header .btn-icon {
+    width:  32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  .org-edit-btn {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+  /* ドラッグハンドルは非表示（タッチDnD非対応のため） */
+  .org-drag-handle  { display: none !important; }
+  .org-emp-drag     { display: none !important; }
+  /* 社員行のチェックボックス列は非表示（DnD非対応のため） */
+  .org-emp-check    { display: none !important; }
+
+  /* 社員行アクションボタンはすでに常時表示（row-actionsはflex固定） */
+  .org-emp-row-actions .btn {
+    padding:   4px 8px;
+    font-size: 11px;
+  }
+  /* draggableをタッチでスクロール阻害させない */
+  [draggable="true"] { touch-action: pan-y; }
+
+  /* ---- HRパネル（人事アクション） ---- */
+  .hr-panels {
+    grid-template-columns: 1fr;
+    gap:                   14px;
+  }
+
+  /* ---- ターン進行ボタン ---- */
+  #btn-advance-turn {
+    width:     100%;
+    padding:   16px;
+    font-size: 16px;
+  }
+  #turn-actions { margin-top: 16px; }
+
+  /* ---- 設定タブ ---- */
+  .tab-bar {
+    overflow-x:          auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap:           nowrap;
+    scrollbar-width:     none;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn,
+  .settings-tab {
+    white-space: nowrap;
+    min-width:   72px;
+    font-size:   12px;
+    padding:     8px 10px;
+  }
+
+  /* ---- ボタン全般のタップターゲット ---- */
+  .btn { min-height: 38px; }
+  .btn-small, .btn-sm { min-height: 32px; }
+
+  /* ---- 財務テーブル ---- */
+  .finance-table {
+    font-size: 12px;
+    min-width: 480px;
+  }
+  .finance-table th,
+  .finance-table td {
+    padding: 7px 10px;
+  }
+
+  /* ---- SVGグラフ ---- */
+  svg.finance-chart {
+    width:  100% !important;
+    height: auto !important;
+  }
+
+  /* ---- 採用モーダルのグレードテーブル ---- */
+  #hire-grade-table {
+    font-size: 12px;
+  }
+  #hire-grade-table input[type="number"] {
+    font-size: 14px;
+    padding: 4px 6px;
+  }
+
+  /* ---- 社員詳細グリッド ---- */
+  .employee-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* ---- プロジェクトリスト ---- */
+  #project-list-area .btn-group {
+    flex-direction: column;
+  }
+  #project-list-area .btn-group .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* ---- flex ラッパーの縦積み ---- */
+  .modal-body .flex.gap-2 {
+    flex-wrap: wrap;
+  }
+  .modal-body .flex.gap-2 .btn {
+    flex: 1;
+    min-width: 100px;
+    justify-content: center;
+  }
+
+  /* ---- readonly-banner ---- */
+  .readonly-banner { font-size: 12px; }
+}
+
+/* ============================================================
+   小型スマホ（375px以下）追加調整
+   ============================================================ */
+@media (max-width: 375px) {
+  .kpi-grid { gap: 8px; }
+  .kpi-card { padding: 10px; }
+  .card-value { font-size: 18px; }
+  #main-content { padding: 10px; }
+}
